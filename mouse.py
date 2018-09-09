@@ -22,11 +22,11 @@ class Mou(object):
                 self.routes_dict[path] = func
 
     @staticmethod
-    def make_response(body):
-        if isinstance(body, bytes):
-            return body
+    def finalize_request(content):
+        if isinstance(content, bytes):
+            return content
         else:
-            return html_response(body)
+            return make_response(content)
 
     def dispatch_request(self, request):
         """
@@ -44,7 +44,7 @@ class Mou(object):
                 return error(404)
 
         b = route_function(request)
-        return self.make_response(b)
+        return self.finalize_request(b)
 
     @staticmethod
     def receive_request(connection):
@@ -71,7 +71,7 @@ class Mou(object):
                 request = Request(r)
                 response = self.dispatch_request(request)
             except Exception as e:
-                log('Internal Server Error\n', e)
+                log('Internal Server Error')
                 traceback.print_exc()
                 response = error(500)
             log("response log:\n <{}>".format(response))

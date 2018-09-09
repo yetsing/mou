@@ -1,3 +1,4 @@
+import json
 import os
 
 from jinja2 import FileSystemLoader, Environment
@@ -71,7 +72,13 @@ def redirect(url, headers=None):
     return r.encode()
 
 
-def html_response(body, headers=None):
+def make_response(content, headers=None):
+    if isinstance(content, tuple):
+        body = content[0]
+        headers = content[1]
+    else:
+        body = content
+
     h = {
         'Content-Type': 'text/html',
     }
@@ -82,3 +89,14 @@ def html_response(body, headers=None):
     header = formatted_header(headers)
     r = header + '\r\n' + body
     return r.encode()
+
+
+def make_json(data):
+    """
+    返回 json 格式的 body 数据
+    """
+    header = {
+        'Content-Type': 'application/json',
+    }
+    body = json.dumps(data, ensure_ascii=False, indent=2)
+    return body, header

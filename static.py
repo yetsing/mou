@@ -1,11 +1,11 @@
 import os
 
 
-def safe_path(path):
+def safe_path(path: str):
     if '..' in path:
         raise FileNotFoundError("No such file or directory: '{}'".format(path))
     else:
-        return path
+        return path.replace('/', '\\')
 
 
 def static(request):
@@ -13,7 +13,6 @@ def static(request):
     静态资源的处理函数, 读取图片（或 JS 代码）并生成响应返回
     """
     parent = os.path.dirname(os.path.dirname(__file__))
-    print('parent', parent)
     filename = safe_path(request.path)
     path = parent + filename
     if not os.path.isfile(path):
