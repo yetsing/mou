@@ -1,7 +1,3 @@
-class MethodException(BaseException):
-    pass
-
-
 def error(code):
     """
     根据 code 返回不同的错误响应

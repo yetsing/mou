@@ -6,22 +6,20 @@ from .utils import log
 from .requset import Request
 from .helper import *
 from .static import static
+from .exception import *
 
 
 class Mou(object):
 
     def __init__(self):
         self.routes_dict = {}
-        self.methods_for_path = {}
 
-    def route(self, path, methods='GET'):
-
-        def decorator(f):
-            self.routes_dict[path] = f
-            self.methods_for_path[path] = methods
-            return f
-
-        return decorator
+    def add_route(self, route_dict):
+        for key, value in route_dict.items():
+            if self.routes_dict.get(key) is not None:
+                raise PathException('same URL path is not allowed')
+            else:
+                self.routes_dict[key] = value
 
     @staticmethod
     def make_response(body):
@@ -35,20 +33,15 @@ class Mou(object):
         根据 path 调用相应的处理函数
         没有处理的 path 会返回 404
         """
-        # 请求静态文件
-        if request.path.startswith('/static'):
-            return static(request)
-
-        methods = self.methods_for_path.get(request.path, '')
-        print(methods, request.method)
-        if request.method not in methods:
-            raise MethodException('HTTP method {} is not added.'.format(request.method))
-
         route_function = self.routes_dict.get(request.path, '')
-        log('request', request, route_function, methods)
+        log('request', request, route_function)
 
         if route_function == '':
-            return error(404)
+            # 请求静态文件
+            if request.path.startswith('/static'):
+                return static(request)
+            else:
+                return error(404)
 
         b = route_function(request)
         return self.make_response(b)
