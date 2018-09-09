@@ -15,11 +15,11 @@ class Mou(object):
         self.routes_dict = {}
 
     def add_route(self, route_dict):
-        for key, value in route_dict.items():
-            if self.routes_dict.get(key) is not None:
-                raise PathException('same URL path is not allowed')
+        for path, func in route_dict.items():
+            if self.routes_dict.get(path) is not None:
+                raise PathException('same URL path <{}> is not allowed'.format(path))
             else:
-                self.routes_dict[key] = value
+                self.routes_dict[path] = func
 
     @staticmethod
     def make_response(body):
