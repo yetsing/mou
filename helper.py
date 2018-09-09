@@ -1,4 +1,8 @@
-def error(request, code=404):
+class MethodException(BaseException):
+    pass
+
+
+def error(code):
     """
     根据 code 返回不同的错误响应
     目前只有 404
@@ -7,6 +11,7 @@ def error(request, code=404):
     # 但是在 HTTP 协议中 code 都是数字似乎更方便所以打破了这个原则
     e = {
         404: b'HTTP/1.x 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
+        500: b'HTTP/1.x 500 Internal Server Error\r\n\r\n<h1>Internal Server Error</h1>'
     }
     return e.get(code, b'')
 

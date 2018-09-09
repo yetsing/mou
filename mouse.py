@@ -1,20 +1,24 @@
 import _thread
 import socket
+import traceback
 
 from .utils import log
 from .requset import Request
 from .helper import *
+from .static import static
 
 
 class Mou(object):
 
     def __init__(self):
-        self.route_dict = {}
+        self.routes_dict = {}
+        self.methods_for_path = {}
 
     def route(self, path, methods='GET'):
 
         def decorator(f):
-            self.route_dict[path] = (f, methods)
+            self.routes_dict[path] = f
+            self.methods_for_path[path] = methods
             return f
 
         return decorator
@@ -24,20 +28,30 @@ class Mou(object):
         if isinstance(body, bytes):
             return body
         else:
-            html_response(body)
+            return html_response(body)
 
     def dispatch_request(self, request):
         """
         根据 path 调用相应的处理函数
         没有处理的 path 会返回 404
         """
-        route_function, method = self.route_dict.get(request.path, error)
-        log('request', request, route_function)
-        if request.method in method:
-            b = route_function(request)
-            return self.make_response(b)
-        else:
-            raise ('HTTP method {} is not added.'.format(request.method))
+        # 请求静态文件
+        if request.path.startswith('/static'):
+            return static(request)
+
+        methods = self.methods_for_path.get(request.path, '')
+        print(methods, request.method)
+        if request.method not in methods:
+            raise MethodException('HTTP method {} is not added.'.format(request.method))
+
+        route_function = self.routes_dict.get(request.path, '')
+        log('request', request, route_function, methods)
+
+        if route_function == '':
+            return error(404)
+
+        b = route_function(request)
+        return self.make_response(b)
 
     @staticmethod
     def receive_request(connection):
@@ -53,13 +67,20 @@ class Mou(object):
                 return request
 
     def process_request(self, connection):
+        """
+        接受请求并返回响应
+        """
         with connection:
             r = self.receive_request(connection)
             log('request log:\n <{}>'.format(r))
             # 把原始请求数据传给 Request 对象
-            request = Request(r)
-            # 用 response_for_path 函数来得到 path 对应的响应内容
-            response = self.dispatch_request(request)
+            try:
+                request = Request(r)
+                response = self.dispatch_request(request)
+            except Exception as e:
+                log('Internal Server Error\n', e)
+                traceback.print_exc()
+                response = error(500)
             log("response log:\n <{}>".format(response))
             # 把响应发送给客户端
             connection.sendall(response)
