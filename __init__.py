@@ -6,6 +6,7 @@ from .helper import (
     make_response,
 )
 from .model import Model
+from .session import Session
 from .utils import log
 from .run import run
 
