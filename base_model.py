@@ -29,9 +29,6 @@ def load(path):
 
 class BaseModel(object):
 
-    def __init__(self, form):
-        self.id = form.get('id', None)
-
     @classmethod
     def db_path(cls):
         classname = cls.__name__
