@@ -27,7 +27,7 @@ def load(path):
         return json.loads(s)
 
 
-class Model(object):
+class BaseModel(object):
 
     def __init__(self, form):
         self.id = form.get('id', None)

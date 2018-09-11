@@ -1,6 +1,6 @@
 import time
 
-from .model import Model
+from .base_model import Model
 from .utils import log
 
 
