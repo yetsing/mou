@@ -1,6 +1,6 @@
-class MethodException(BaseException):
+class MethodError(BaseException):
     pass
 
 
-class PathException(BaseException):
+class PathError(BaseException):
     pass
