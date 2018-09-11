@@ -1,25 +1,33 @@
 import urllib.parse
+import threading
+
 from .utils import log
 import json
 
 
 # 定义一个 class 用于保存请求的数据
-class Request(object):
-    def __init__(self, raw_data):
+class Request(threading.local):
+
+    def __init__(self):
+        self.body = ''
+        self.method = ''
+        self.path = ''
+        self.query = {}
+        self.headers = {}
+        self.cookies = {}
+
+    def set(self, raw_data):
         # 只能 split 一次，因为 body 中可能有换行
         header, self.body = raw_data.split('\r\n\r\n', 1)
         h = header.split('\r\n')
 
         parts = h[0].split()
         self.method = parts[0]
+
         path = parts[1]
-        self.path = ""
-        self.query = {}
         self.parse_path(path)
         log('Request: path 和 query', self.path, self.query)
 
-        self.headers = {}
-        self.cookies = {}
         self.add_headers(h[1:])
         log('Request: headers 和 cookies', self.headers, self.cookies)
 
@@ -37,6 +45,7 @@ class Request(object):
             k, v = cookies.split('=')
             self.cookies[k] = v
 
+    @property
     def form(self):
         body = urllib.parse.unquote_plus(self.body)
         log('form', self.body)
@@ -44,11 +53,13 @@ class Request(object):
         args = body.split('&')
         f = {}
         log('args', args)
-        for arg in args:
-            k, v = arg.split('=')
-            f[k] = v
-        log('form() 字典', f)
-        return f
+        try:
+            for arg in args:
+                k, v = arg.split('=')
+                f[k] = v
+            log('form() 字典', f)
+        finally:
+            return f
 
     def parse_path(self, path):
         """
@@ -73,8 +84,15 @@ class Request(object):
             self.path = path
             self.query = query
 
+    @property
     def json(self):
         """
         把 body 中的 json 格式字符串解析成 dict 或者 list 并返回
         """
         return json.loads(self.body)
+
+    def transmit(self, local):
+        for k, v in self.__dict__.items():
+            setattr(local, k, v)
+        local.form = self.form
+        local.json = self.json

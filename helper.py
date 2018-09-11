@@ -56,11 +56,11 @@ def formatted_header(headers, code):
     Content-Type: text/html
     Set-Cookie: user=gua
     """
-    state_message = {
+    phrase = {
         200: 'OK',
         302: 'Move temporarily',
     }
-    header = 'HTTP/1.1 {} {}\r\n'.format(code, state_message[code])
+    header = 'HTTP/1.1 {} {}\r\n'.format(code, phrase[code])
     header += ''.join([
         '{}: {}\r\n'.format(k, v) for k, v in headers.items()
     ])

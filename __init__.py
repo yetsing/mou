@@ -8,6 +8,6 @@ from .helper import (
 from .model import Model
 from .session import Session
 from .utils import log
-from .run import run
+from .run import run, request
 
 render_template = MouTemplate.render

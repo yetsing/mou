@@ -39,6 +39,18 @@ th2 = threading.Thread(target=fun2)
 #
 # a = datetime.datetime.utcnow()
 # print(a)
-a = {}
-b = a.pop('h', 1)
-print(b, type(b))
+class H(object):
+
+    def __init__(self):
+        self.a = 'a'
+        self.b = 'b'
+        self.c = 'c'
+
+    @property
+    def hello(self):
+        h = self.a + self.b
+        return h
+
+
+a = H()
+print(a.__dict__)

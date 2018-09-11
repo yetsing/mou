@@ -1,5 +1,6 @@
 import _thread
 import socket
+import threading
 import traceback
 
 from .utils import log
@@ -7,6 +8,8 @@ from .requset import Request
 from .helper import *
 from .static import static
 from .mouse import route_dict
+
+request = Request()
 
 
 def finalize_request(content):
@@ -16,11 +19,12 @@ def finalize_request(content):
         return make_response(content)
 
 
-def dispatch_request(request):
+def dispatch_request():
     """
     根据 path 调用相应的处理函数
     没有处理的 path 会返回 404
     """
+    # time.sleep(15)
     route_function = route_dict.get(request.path, '')
     log('request', request, route_function)
     if route_function == '':
@@ -29,22 +33,22 @@ def dispatch_request(request):
             return static(request)
         else:
             return error(404)
-    b = route_function(request)
+    b = route_function()
     return finalize_request(b)
 
 
 def receive_request(connection):
-    request = b''
+    req = b''
     buffer_size = 1024
     while True:
         r = connection.recv(buffer_size)
-        request += r
+        req += r
         print('buffer_size: ', r)
         # 取到的数据长度不够 buffer_size 的时候，说明数据已经取完了。
         if len(r) < buffer_size:
-            request = request.decode()
-            log('request\n {}'.format(request))
-            return request
+            req = req.decode()
+            log('request\n {}'.format(req))
+            return req
 
 
 def process_request(connection):
@@ -56,8 +60,8 @@ def process_request(connection):
         log('request log:\n <{}>'.format(r))
         # 把原始请求数据传给 Request 对象
         try:
-            request = Request(r)
-            response = dispatch_request(request)
+            request.set(r)
+            response = dispatch_request()
         except:
             log('Internal Server Error')
             traceback.print_exc()
