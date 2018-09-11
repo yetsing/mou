@@ -1,7 +1,7 @@
 import json
 import os
 
-from utils import log
+from .utils import log
 
 
 def save(data, path):
@@ -37,33 +37,6 @@ class Model(object):
         classname = cls.__name__
         path = 'data/{}.txt'.format(classname)
         return path
-
-    @classmethod
-    def new(cls, form):
-        m = cls(form)
-        m.save()
-        return m
-
-    @classmethod
-    def delete(cls, id):
-        ms = cls.all()
-        for i, m in enumerate(ms):
-            if m.id == id:
-                del ms[i]
-                break
-
-        ns = [m.__dict__ for m in ms]
-        path = cls.db_path()
-        save(ns, path)
-
-    @classmethod
-    def update(cls, **kwargs):
-        id = int(kwargs.pop('id'))
-        m = cls.find_by(id=id)
-        for k, v in kwargs.items():
-            setattr(m, k, v)
-        m.save()
-        return m
 
     @classmethod
     def all(cls):
