@@ -5,7 +5,6 @@ from .utils import log
 import json
 
 
-# 定义一个 class 用于保存请求的数据
 class Request(threading.local):
 
     def __init__(self):
@@ -32,9 +31,6 @@ class Request(threading.local):
         log('Request: headers 和 cookies', self.headers, self.cookies)
 
     def add_headers(self, header):
-        """
-        Cookie: user=gua
-        """
         lines = header
         for line in lines:
             k, v = line.split(': ', 1)
@@ -62,14 +58,6 @@ class Request(threading.local):
             return f
 
     def parse_path(self, path):
-        """
-        输入: /gua?message=hello&author=gua
-        返回
-        (gua, {
-            'message': 'hello',
-            'author': 'gua',
-        })
-        """
         index = path.find('?')
         if index == -1:
             self.path = path
@@ -91,8 +79,3 @@ class Request(threading.local):
         """
         return json.loads(self.body)
 
-    def transmit(self, local):
-        for k, v in self.__dict__.items():
-            setattr(local, k, v)
-        local.form = self.form
-        local.json = self.json

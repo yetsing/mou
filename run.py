@@ -16,7 +16,8 @@ def finalize_request(content):
     if isinstance(content, bytes):
         return content
     else:
-        return make_response(content)
+        r = make_response(content)
+        return r.get_bytes()
 
 
 def dispatch_request():
@@ -24,22 +25,17 @@ def dispatch_request():
     根据 path 调用相应的处理函数
     没有处理的 path 会返回 404
     """
-    # time.sleep(15)
-    route_function = route_dict.get(request.path, '')
+    route_function = route_dict.get(request.path, error)
     log('request', request, route_function)
-    if route_function == '':
-        # 请求静态文件
-        if request.path.startswith('/static'):
-            return static(request)
-        else:
-            return error(404)
+    if request.path.startswith('/static'):
+        return static(request)
     b = route_function()
     return finalize_request(b)
 
 
 def receive_request(connection):
     req = b''
-    buffer_size = 1024
+    buffer_size = 521
     while True:
         r = connection.recv(buffer_size)
         req += r
@@ -75,16 +71,11 @@ def run(host, port):
     """
     启动服务器
     """
-    # 初始化 socket 套路
-    # 使用 with 可以保证程序中断的时候正确关闭 socket 释放占用的端口
     log('开始运行于', 'http://{}:{}'.format(host, port))
     with socket.socket() as s:
         s.bind((host, port))
-        # 监听 接受 读取请求数据 解码成字符串
         s.listen()
-        # 无限循环来处理请求
         while True:
             connection, address = s.accept()
-            # 第二个参数类型必须是 tuple
             log('ip {}'.format(address))
             _thread.start_new_thread(process_request, (connection,))
